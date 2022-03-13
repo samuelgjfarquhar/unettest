@@ -2,50 +2,59 @@ import numpy as np
 import nibabel as nib
 import glob
 from tensorflow.keras.utils import to_categorical
-import matplotlib.pyplot as plt
-from tifffile import imsave
 from sklearn.preprocessing import MinMaxScaler
+import random
+import matplotlib.pyplot as plt
+import torchio as tio
+
 scaler = MinMaxScaler()
 
-TRAIN_DATASET_PATH = "C:\\Users\samue\\BraTS2020\\BraTS2020_TrainingData\\MICCAI_BraTS2020_TrainingData\\"
-test_image_flair = nib.load(TRAIN_DATASET_PATH + "BraTS20_Training_355\\BraTS20_Training_355_flair.nii").get_fdata()
-print(test_image_flair.max())
-test_image_flair = scaler.fit_transform(test_image_flair.reshape(-1, test_image_flair.shape[-1])).reshape(test_image_flair.shape)
+liver_list = sorted(glob.glob('D:\\liver\\test\\train\\*.nii'))
 
-test_image_t1=nib.load(TRAIN_DATASET_PATH + 'BraTS20_Training_355/BraTS20_Training_355_t1.nii').get_fdata()
-test_image_t1=scaler.fit_transform(test_image_t1.reshape(-1, test_image_t1.shape[-1])).reshape(test_image_t1.shape)
+mask_list = sorted(glob.glob('D:\\liver\\test\\mask\\*.nii'))
 
-test_image_t1ce=nib.load(TRAIN_DATASET_PATH + 'BraTS20_Training_355/BraTS20_Training_355_t1ce.nii').get_fdata()
-test_image_t1ce=scaler.fit_transform(test_image_t1ce.reshape(-1, test_image_t1ce.shape[-1])).reshape(test_image_t1ce.shape)
+#Training numpy conversion
+for img in range(len(liver_list)):   #Using t1_list as all lists are of same size
+   
+   
+    val_liver=nib.load(liver_list[img]).get_fdata()
+    val_liver=scaler.fit_transform(val_liver.reshape(-1, val_liver.shape[-1])).reshape(val_liver.shape)
+           
+    val_mask=nib.load(mask_list[img]).get_fdata()
+    val_mask=val_mask.astype(np.uint8)
+        
+    combined_images =val_liver[177:443, 135:391, 340:596]
+    combined_mask = val_mask[177:443, 135:391, 340:596]
+    
+    import skimage.transform as skTrans
+    combined_images = skTrans.resize(combined_images, (128,128,256), order=1, preserve_range=True)
+    combined_mask = skTrans.resize(combined_mask, (128,128,256), order=1, preserve_range=True)  
+        
+    np.save('D:\\liver\\test\\npyTrain\\liver_'+str(img)+'.npy', combined_images)
+    np.save('D:\\liver\\test\\npyMask\\liver_'+str(img)+'.npy', combined_mask)
 
-test_image_t2=nib.load(TRAIN_DATASET_PATH + 'BraTS20_Training_355/BraTS20_Training_355_t2.nii').get_fdata()
-test_image_t2=scaler.fit_transform(test_image_t2.reshape(-1, test_image_t2.shape[-1])).reshape(test_image_t2.shape)
+    print(f'img {img} converted')
 
-test_mask=nib.load(TRAIN_DATASET_PATH + 'BraTS20_Training_355/BraTS20_Training_355_seg.nii').get_fdata()
-test_mask=test_mask.astype(np.uint8)
 
-print(np.unique(test_mask))  #0, 1, 2, 4 (Need to reencode to 0, 1, 2, 3)
-test_mask[test_mask==4] = 3  #Reassign mask values 4 to 3
-print(np.unique(test_mask)) 
+# img = np.load('D:\\liver\\test\\npyTrain\\liver_1.npy')
+# mask = np.load('D:\\liver\\test\\npyMask\\liver_1.npy')
 
-import random
-n_slice=random.randint(0, test_mask.shape[2])
+# plt.subplot(234)
+# plt.imshow(img[:,:,90], cmap='gray')
+# plt.title('Image t2')
+# plt.subplot(235)
+# plt.imshow(mask[:,:,90], cmap='gray')
+# plt.title('Mask')
+# plt.show()
 
-plt.figure(figsize=(12, 8))
+# testimg = np.load('D:\\liver\\test\\npyTrain\\testliver_1.npy')
+# testmask = np.load('D:\\liver\\test\\npyMask\\testliver_1.npy')
 
-plt.subplot(231)
-plt.imshow(test_image_flair[:,:,n_slice], cmap='gray')
-plt.title('Image flair')
-plt.subplot(232)
-plt.imshow(test_image_t1[:,:,n_slice], cmap='gray')
-plt.title('Image t1')
-plt.subplot(233)
-plt.imshow(test_image_t1ce[:,:,n_slice], cmap='gray')
-plt.title('Image t1ce')
-plt.subplot(234)
-plt.imshow(test_image_t2[:,:,n_slice], cmap='gray')
-plt.title('Image t2')
-plt.subplot(235)
-plt.imshow(test_mask[:,:,n_slice])
-plt.title('Mask')
-plt.show()
+# plt.subplot(234)
+# plt.imshow(testimg[:,:,90], cmap='gray')
+# plt.title('Image t2')
+# plt.subplot(235)
+# plt.imshow(testmask[:,:,90], cmap='gray')
+# plt.title('Mask')
+# plt.show()
+
