@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-=======
-import os 
->>>>>>> 2496f27ad8d9095f486bc8552883a480383234c2
 import numpy as np 
 
 def load_img(img_dir, img_list):
@@ -33,46 +29,7 @@ def imageLoader(img_dir, img_list, mask_dir, mask_list, batch_size):
             batch_start += batch_size
             batch_end += batch_size
     
-<<<<<<< HEAD
 
 
-=======
-from matplotlib import pyplot as plt
-import random
-
-train_img_dir = "C:\\Users\\samue\\BraTS2020\\BraTS2020_TrainingData\\input_data_128\\train\\images\\"
-train_mask_dir = "C:\\Users\\samue\\BraTS2020\\BraTS2020_TrainingData\\input_data_128\\train\\masks\\"
-train_img_list=os.listdir(train_img_dir)
-train_mask_list = os.listdir(train_mask_dir)
-
-batch_size = 2
-
-train_img_datagen = imageLoader(train_img_dir, train_img_list, 
-                                train_mask_dir, train_mask_list, batch_size)
-
-img, msk = train_img_datagen.__next__()
-
-img_num = random.randint(0,img.shape[0]-1)
-test_img=img[img_num]
-test_mask=msk[img_num]
-test_mask=np.argmax(test_mask, axis=3)
-
-n_slice=random.randint(0, test_mask.shape[2])
-plt.figure(figsize=(12, 8))
-
-#plt.subplot(221)
-#plt.imshow(test_img[:,:,n_slice, 0], cmap='gray')
-#plt.title('Image flair')
-#plt.subplot(222)
-#plt.imshow(test_img[:,:,n_slice, 1], cmap='gray')
-#plt.title('Image t1ce')
-#plt.subplot(223)
-#plt.imshow(test_img[:,:,n_slice, 2], cmap='gray')
-#plt.title('Image t2')
-#plt.subplot(224)
-#plt.imshow(test_mask[:,:,n_slice])
-#plt.title('Mask')
-#plt.show()
->>>>>>> 2496f27ad8d9095f486bc8552883a480383234c2
 
 
