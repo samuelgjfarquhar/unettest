@@ -15,6 +15,7 @@ import random
 from optparse import OptionParser
 import tensorflow_addons as tfa
 from keras.models import load_model
+from keras.metrics import MeanIoU
 
 tf.config.run_functions_eagerly=True
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
@@ -32,7 +33,7 @@ train_mask_list = os.listdir(train_mask_dir)
 
 val_img_list = os.listdir(val_img_dir)
 val_mask_list = os.listdir(val_mask_dir)
-batch_size = 4
+batch_size = 2
 
 train_img_datagen = imageLoader(train_img_dir, train_img_list,
                                 train_mask_dir, train_mask_list, batch_size)
@@ -83,80 +84,58 @@ print(model.summary())
 print(model.input_shape)
 print(model.output_shape)
 
-history = model.fit(train_img_datagen,
-                    steps_per_epoch=steps_per_epoch,
-                    epochs=40,
-                    verbose=1,
-                    validation_data=val_img_datagen,
-                    validation_steps=val_steps_per_epoch,
-                    )
+# ##################################################################
+# history = model.fit(train_img_datagen,
+#                     steps_per_epoch=steps_per_epoch,
+#                     epochs=40,
+#                     verbose=1,
+#                     validation_data=val_img_datagen,
+#                     validation_steps=val_steps_per_epoch,
+#                     )
 
-model.save('liver.hdf5')
-##################################################################
+# os.chdir('C:/Users/samue/UNETliver/')
+# model.save('liver.hdf5')
+# os.chdir('C:/Users/samue/BraTS2020/')
 
+# # plot the training and validation IoU and loss at each epoch
+# loss = history.history['loss']
+# val_loss = history.history['val_loss']
+# epochs = range(1, len(loss) + 1)
+# plt.plot(epochs, loss, 'y', label='Training loss')
+# plt.plot(epochs, val_loss, 'r', label='Validation loss')
+# plt.title('Training and validation loss')
+# plt.xlabel('Epochs')
+# plt.ylabel('Loss')
+# plt.legend()
+# plt.show()
 
-# plot the training and validation IoU and loss at each epoch
-loss = history.history['loss']
-val_loss = history.history['val_loss']
-epochs = range(1, len(loss) + 1)
-plt.plot(epochs, loss, 'y', label='Training loss')
-plt.plot(epochs, val_loss, 'r', label='Validation loss')
-plt.title('Training and validation loss')
-plt.xlabel('Epochs')
-plt.ylabel('Loss')
-plt.legend()
-plt.show()
+# acc = history.history['accuracy']
+# val_acc = history.history['val_accuracy']
 
-acc = history.history['accuracy']
-val_acc = history.history['val_accuracy']
+# plt.plot(epochs, acc, 'y', label='Training accuracy')
+# plt.plot(epochs, val_acc, 'r', label='Validation accuracy')
+# plt.title('Training and validation accuracy')
+# plt.xlabel('Epochs')
+# plt.ylabel('Accuracy')
+# plt.legend()
+# plt.show()
+# #################################################
 
-plt.plot(epochs, acc, 'y', label='Training accuracy')
-plt.plot(epochs, val_acc, 'r', label='Validation accuracy')
-plt.title('Training and validation accuracy')
-plt.xlabel('Epochs')
-plt.ylabel('Accuracy')
-plt.legend()
-plt.show()
-#################################################
+# my_model = load_model('liver.hdf5',
+#                       compile=False)
 
-
-# Load model for prediction or continue training
-
-# For continuing training....
-# The following gives an error: Unknown loss function: dice_loss_plus_1focal_loss
-# This is because the model does not save loss function and metrics. So to compile and
-# continue training we need to provide these as custom_objects.
-my_model = load_model('brats_3d.hdf5')
-
-# So let us add the loss as custom object... but the following throws another error...
-# Unknown metric function: iou_score
-my_model = load_model('brats_3d.hdf5',
-                      custom_objects={'dice_loss_plus_1focal_loss': total_loss})
-
-# Now, let us add the iou_score function we used during our initial training
-my_model = load_model('brats_3d.hdf5',
-                      custom_objects={'dice_loss_plus_1focal_loss': total_loss,
-                                      'iou_score': sm.metrics.IOUScore(threshold=0.5)})
-
-# Now all set to continue the training process.
-history2 = my_model.fit(train_img_datagen,
-                        steps_per_epoch=steps_per_epoch,
-                        epochs=1,
-                        verbose=1,
-                        validation_data=val_img_datagen,
-                        validation_steps=val_steps_per_epoch,
-                        )
-#################################################
-
-# For predictions you do not need to compile the model, so ...
+# # Now all set to continue the training process.
+# history2 = my_model.fit(train_img_datagen,
+#                         steps_per_epoch=steps_per_epoch,
+#                         epochs=1,
+#                         verbose=1,
+#                         validation_data=val_img_datagen,
+#                         validation_steps=val_steps_per_epoch,
+#                         )
+# #################################################
 my_model = load_model('liver.hdf5',
                       compile=False)
-
-# Verify IoU on a batch of images from the test dataset
-# Using built in keras function for IoU
-# Only works on TF > 2.0
-from keras.metrics import MeanIoU
-
+                      
 batch_size = 4  # Check IoU for a batch of images
 test_img_datagen = imageLoader(val_img_dir, val_img_list,
                                val_mask_dir, val_mask_list, batch_size)
