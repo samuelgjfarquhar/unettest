@@ -1,4 +1,3 @@
-
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input, Conv3D, MaxPooling3D, concatenate, Conv3DTranspose, BatchNormalization, Dropout, Lambda
 from tensorflow.keras.optimizers import Adam
@@ -9,7 +8,6 @@ kernel_initializer =  'he_uniform'
 def unet_model(IMG_HEIGHT, IMG_WIDTH, IMG_DEPTH, IMG_CHANNELS, num_classes):
  #Build the model
     inputs = Input((IMG_HEIGHT, IMG_WIDTH, IMG_DEPTH, IMG_CHANNELS))
-    #s = Lambda(lambda x: x / 255)(inputs)   #No need for this if we normalize our inputs beforehand
     s = inputs
 
     #Contraction path
@@ -69,8 +67,3 @@ def unet_model(IMG_HEIGHT, IMG_WIDTH, IMG_DEPTH, IMG_CHANNELS, num_classes):
     model.summary()
     
     return model
-
-#Test if everything is working ok. 
-model = unet_model(128, 128, 128, 1, 3)
-print(model.input_shape)
-print(model.output_shape)
