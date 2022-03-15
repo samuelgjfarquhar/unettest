@@ -132,10 +132,15 @@ print(model.output_shape)
 #                         validation_data=val_img_datagen,
 #                         validation_steps=val_steps_per_epoch,
 #                         )
-# #################################################
-my_model = load_model('liver.hdf5',
-                      compile=False)
-                      
+# ########################################
+
+my_model = load_model('liver.hdf5', 
+                      custom_objects={
+                          'dice_loss': dice_loss,
+                          'focal_loss': focal_loss,
+                          'dice_loss_plus_1focal_loss': total_loss,
+                          'iou_score':sm.metrics.IOUScore(threshold=0.5)})
+
 batch_size = 4  # Check IoU for a batch of images
 test_img_datagen = imageLoader(val_img_dir, val_img_list,
                                val_mask_dir, val_mask_list, batch_size)
@@ -147,7 +152,7 @@ test_mask_batch_argmax = np.argmax(test_mask_batch, axis=4)
 test_pred_batch = my_model.predict(test_image_batch)
 test_pred_batch_argmax = np.argmax(test_pred_batch, axis=4)
 
-val_loss, val_dice = model.evaluate(val_img_datagen)
+val_loss, val_dice = my_model.evaluate(val_img_datagen)
 print(f"validation soft dice loss: {val_loss:.4f}")
 print(f"validation dice coefficient: {val_dice:.4f}")
 
@@ -158,6 +163,8 @@ print("Mean IoU =", IOU_keras.result().numpy())
 
 
 tester = np.load("D:\\test\\npyVal\\liver_42.npy")
+testermask = np.load("D:\\test\\npyValMask\\liver_42.npy")
+
 tt = np.expand_dims(tester, axis=0)
 test_val_prediction = my_model.predict(tt)
 test_val_prediction_argmax = np.argmax(test_val_prediction, axis=4)[0, :, :]
@@ -171,5 +178,8 @@ plt.imshow(tester[:, :, n_slice_val, :], cmap='gray')
 plt.subplot(232)
 plt.title('Prediction on validation image')
 plt.imshow(test_val_prediction_argmax[:, :, n_slice_val])
+plt.subplot(233)
+plt.title('mask')
+plt.imshow(testermask[:, :, n_slice_val])
 plt.show()
 
